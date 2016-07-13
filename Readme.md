@@ -1,5 +1,5 @@
 
-# Hyperpowers
+# Hyperpower
 
 Extension for hyperterm that turns on power mode, with bonus `wow` mode.
 
@@ -7,5 +7,5 @@ Extension for hyperterm that turns on power mode, with bonus `wow` mode.
 
 ## How to use
 
-Install [HyperTerm](https://hyperterm.org) and add `hyperpowers`
+Install [HyperTerm](https://hyperterm.org) and add `hyperpower`
 to `plugins` in `~/.hyperterm.js`.
