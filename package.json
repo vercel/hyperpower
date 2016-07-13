@@ -1,0 +1,9 @@
+{
+  "name": "hyperpower",
+  "version": "0.0.1",
+  "description": "",
+  "dependencies": {
+    "convert-css-color-name-to-hex": "0.1.1",
+    "lodash.throttle": "4.0.1"
+  }
+}
