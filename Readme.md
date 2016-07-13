@@ -9,3 +9,12 @@ Extension for hyperterm that turns on power mode, with bonus `wow` mode.
 
 Install [HyperTerm](https://hyperterm.org) and add `hyperpower`
 to `plugins` in `~/.hyperterm.js`.
+
+## Credits
+
+Based on [`power-mode`](https://atom.io/packages/power-mode) and
+[`rage-power`](https://github.com/itszero/rage-power).
+
+## License
+
+MIT
