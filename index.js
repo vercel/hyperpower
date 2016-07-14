@@ -13,7 +13,7 @@ const PARTICLE_VELOCITY_RANGE = {
 exports.middleware = (store) => (next) => (action) => {
   if ('SESSION_ADD_DATA' === action.type) {
     const { data } = action;
-    if (/bash: wow: command not found\n/.test(data)) {
+    if (/bash: wow: command not found/.test(data)) {
       store.dispatch({
         type: 'WOW_MODE_TOGGLE'
       });
