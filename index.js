@@ -13,7 +13,7 @@ const PARTICLE_VELOCITY_RANGE = {
 exports.middleware = (store) => (next) => (action) => {
   if ('SESSION_ADD_DATA' === action.type) {
     const { data } = action;
-    if (/bash: wow: command not found/.test(data)) {
+    if (/bash: wow: command not found\n/.test(data)) {
       store.dispatch({
         type: 'WOW_MODE_TOGGLE'
       });
@@ -165,9 +165,9 @@ exports.decorateTerm = (Term, { React, notify }) => {
 
     componentWillReceiveProps (next) {
       if (next.wowMode && !this.props.wowMode) {
-        notify('Wow mode ON');
+        notify('WOW such on');
       } else if (!next.wowMode && this.props.wowMode) {
-        notify('Wow mode OFF');
+        notify('WOW such off');
       }
     }
 
