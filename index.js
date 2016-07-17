@@ -145,6 +145,8 @@ exports.decorateTerm = (Term, { React, notify }) => {
     }
 
     _shake () {
+      if(!this.props.wowMode) return;
+
       const intensity = 1 + 2 * Math.random();
       const x = intensity * (Math.random() > 0.5 ? -1 : 1);
       const y = intensity * (Math.random() > 0.5 ? -1 : 1);
