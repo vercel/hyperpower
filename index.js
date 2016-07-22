@@ -146,7 +146,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
 
     _shake () {
       const pluginConfig = config.getConfig().plugins;
-      if (pluginConfig !== undefined && pluginConfig.hyperpower !== undefined && pluginConfig.hyperpower["shake.enabled"] === false) {
+      if (pluginConfig !== undefined && pluginConfig.hyperpower-plus !== undefined && pluginConfig.hyperpower-plus["shake.enabled"] === false) {
         return;
       }
       const intensity = 1 + 2 * Math.random();
