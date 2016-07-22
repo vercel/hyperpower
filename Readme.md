@@ -7,7 +7,7 @@ Extension for hyperterm that turns on power mode, with bonus `wow` mode.
 
 ## How to use
 
-Install [HyperTerm](https://hyperterm.org) and add `hyperpower`
+Install [HyperTerm](https://hyperterm.org) and add `hyperpower-plus`
 to `plugins` in `~/.hyperterm.js`.
 
 ## Shake config

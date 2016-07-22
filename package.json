@@ -1,7 +1,7 @@
 {
-  "name": "hyperpower",
-  "version": "0.1.3",
-  "keywords": ["hyperterm"],
+  "name": "hyperpower-plus",
+  "version": "0.0.1",
+  "keywords": ["hyperterm","hyperpower-plus"],
   "description": "Extension for particle effects in hyperterm",
   "dependencies": {
     "convert-css-color-name-to-hex": "0.1.1",
