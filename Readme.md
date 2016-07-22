@@ -22,7 +22,7 @@ module.exports = {
     .....
 
     plugins: {
-      hyperpower-plus: {
+      "hyperpower-plus": {
         "shake.enabled": false
       }
     }
