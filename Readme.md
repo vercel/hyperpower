@@ -1,5 +1,5 @@
 
-# Hyperpower
+# hyperpower-plus
 
 Extension for hyperterm that turns on power mode, with bonus `wow` mode.
 
@@ -7,8 +7,28 @@ Extension for hyperterm that turns on power mode, with bonus `wow` mode.
 
 ## How to use
 
-Install [HyperTerm](https://hyperterm.org) and add `hyperpower`
+Install [HyperTerm](https://hyperterm.org) and add `hyperpower-plus`
 to `plugins` in `~/.hyperterm.js`.
+
+## Shake config
+
+```
+$ vim ~/.hyperterm.js
+module.exports = {
+  config: {
+    // default font size in pixels for all tabs
+    fontSize: 12,
+
+    .....
+
+    plugins: {
+      "hyperpower-plus": {
+        "shake.enabled": false
+      }
+    }
+  }
+}
+```
 
 ## Credits
 
