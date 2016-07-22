@@ -1,5 +1,5 @@
 
-# Hyperpower
+# hyperpower-plus
 
 Extension for hyperterm that turns on power mode, with bonus `wow` mode.
 
