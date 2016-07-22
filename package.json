@@ -1,6 +1,6 @@
 {
   "name": "hyperpower-plus",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "keywords": ["hyperterm","hyperpower-plus"],
   "description": "Extension for particle effects in hyperterm",
   "dependencies": {
