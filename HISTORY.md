@@ -1,4 +1,10 @@
 
+0.2.0 / 2016-07-27
+==================
+
+  * update hyperpower to work with 0.7.0+ :) [@rauchg]
+  * "shake" option only enabled in "wow" mode now [@newyork-anthonyng]
+
 0.1.3 / 2016-07-14
 ==================
 
