@@ -1,4 +1,9 @@
 
+0.2.1 / 2016-07-27
+==================
+
+  * make wow mode work on all shells (#1) [@willmanduffy, @rauchg]
+
 0.2.0 / 2016-07-27
 ==================
 
