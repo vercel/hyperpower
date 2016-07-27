@@ -13,7 +13,7 @@ const PARTICLE_VELOCITY_RANGE = {
 exports.middleware = (store) => (next) => (action) => {
   if ('SESSION_ADD_DATA' === action.type) {
     const { data } = action;
-    if (/bash: wow: command not found/.test(data)) {
+    if ((/wow: command not found/.test(data)) || (/command not found: wow/.test(data))) {
       store.dispatch({
         type: 'WOW_MODE_TOGGLE'
       });
@@ -115,7 +115,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
 
     _spawnParticles (x, y) {
       // const { colors } = this.props;
-      const colors = this.props.wowMode 
+      const colors = this.props.wowMode
         ? this.props.colors
         : [toHex(this.props.cursorColor)];
       const numParticles = PARTICLE_NUM_RANGE();
