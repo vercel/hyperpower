@@ -1,5 +1,8 @@
 const throttle = require('lodash.throttle');
-const toHex = require('convert-css-color-name-to-hex');
+const Color = require('color');
+const nameToHex = require('convert-css-color-name-to-hex');
+const toHex = (str) => Color(nameToHex(str)).hexString();
+const values = require('lodash.values');
 
 const MAX_PARTICLES = 500;
 const PARTICLE_NUM_RANGE = () => 5 + Math.round(Math.random() * 5);
@@ -116,7 +119,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
     _spawnParticles (x, y) {
       // const { colors } = this.props;
       const colors = this.props.wowMode 
-        ? this.props.colors
+        ? values(this.props.colors).map(toHex)
         : [toHex(this.props.cursorColor)];
       const numParticles = PARTICLE_NUM_RANGE();
       for (let i = 0; i < numParticles; i++) {
