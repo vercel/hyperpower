@@ -2,9 +2,10 @@
   "name": "hyperpower",
   "version": "0.2.1",
   "keywords": [
-    "hyperterm"
+    "hyper",
+    "hyper.app"
   ],
-  "description": "Extension for particle effects in hyperterm",
+  "description": "Extension for particle effects in Hyper",
   "dependencies": {
     "color": "0.11.3",
     "convert-css-color-name-to-hex": "0.1.1",
