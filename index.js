@@ -42,11 +42,14 @@ exports.mapTermsState = (state, map) => {
   });
 };
 
-exports.getTermProps = (uid, parentProps, props) => {
+const passProps = (uid, parentProps, props) => {
   return Object.assign(props, {
     wowMode: parentProps.wowMode
   });
 }
+
+exports.getTermGroupProps = passProps;
+exports.getTermProps = passProps;
 
 // code based on
 // https://atom.io/packages/power-mode
@@ -118,7 +121,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
 
     _spawnParticles (x, y) {
       // const { colors } = this.props;
-      const colors = this.props.wowMode 
+      const colors = this.props.wowMode
         ? values(this.props.colors).map(toHex)
         : [toHex(this.props.cursorColor)];
       const numParticles = PARTICLE_NUM_RANGE();
