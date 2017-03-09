@@ -168,6 +168,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
       this._window.requestAnimationFrame(this._drawFrame);
     }
 
+		// Pushes `PARTICLE_NUM_RANGE` new particles into the simulation.
     _spawnParticles (x, y) {
       // const { colors } = this.props;
       const colors = this.props.wowMode
@@ -184,6 +185,8 @@ exports.decorateTerm = (Term, { React, notify }) => {
       }
     }
 
+		// Returns a particle of a specified color
+		// at some random offset from the input coordinates.
     _createParticle (x, y, color) {
       return {
         x,
@@ -199,6 +202,8 @@ exports.decorateTerm = (Term, { React, notify }) => {
       };
     }
 
+		// 'Shakes' the screen by applying a temporary translation 
+		// to the terminal container.
     _shake () {
       // TODO: Maybe we should do this check in `_onCursorChange`?
       if(!this.props.wowMode) return;
