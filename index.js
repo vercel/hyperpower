@@ -4,6 +4,7 @@ const nameToHex = require('convert-css-color-name-to-hex');
 const toHex = (str) => Color(nameToHex(str)).hexString();
 const values = require('lodash.values');
 
+// Constants for the particle simulation.
 const MAX_PARTICLES = 500;
 const PARTICLE_NUM_RANGE = () => 5 + Math.round(Math.random() * 5);
 const PARTICLE_GRAVITY = 0.075;
@@ -13,10 +14,19 @@ const PARTICLE_VELOCITY_RANGE = {
   y: [-3.5, -1.5]
 };
 
+// Our extension's custom redux middleware. Here we can intercept redux actions and respond to them.
 exports.middleware = (store) => (next) => (action) => {
+  // the redux `action` object contains a loose `type` string, the 
+  // 'SESSION_ADD_DATA' type identifier corresponds to an action in which 
+  // the terminal wants to output information to the GUI.
   if ('SESSION_ADD_DATA' === action.type) {
+		
+    // 'SESSION_ADD_DATA' actions hold the output text data in the `data` key.
     const { data } = action;
     if (detectWowCommand(data)) {
+      // Here, we are responding to 'wow' being input at the prompt. Since we don't 
+      // want the "unknown command" output being displayed to the user, we don't thunk the next
+      // middleware by calling `next(action)`. Instead, we dispatch a new action 'WOW_MODE_TOGGLE'.
       store.dispatch({
         type: 'WOW_MODE_TOGGLE'
       });
@@ -28,6 +38,15 @@ exports.middleware = (store) => (next) => (action) => {
   }
 };
 
+//
+// This function performs regex matching on expected shell output for 'wow' being input 
+// at the command line. Currently it supports output from bash, zsh and fish.
+//
+// *NOTE* 
+// Doing a substring test like this makes editing this file impossible while 
+// the plugin is active. Since the source code contains the substrings being matched,
+// we will actually just trigger wow mode upon opening the file and no data will be displayed.
+//
 function detectWowCommand(data) {
   const patterns = [
     'wow: command not found',
@@ -37,20 +56,27 @@ function detectWowCommand(data) {
   return new RegExp('(' + patterns.join(')|(') + ')').test(data)
 }
 
+// Our extension's custom ui state reducer. Here we can listen for our 'WOW_MODE_TOGGLE' action 
+// and modify the state accordingly.
 exports.reduceUI = (state, action) => {
   switch (action.type) {
     case 'WOW_MODE_TOGGLE':
+			// Toggle wow mode!
       return state.set('wowMode', !state.wowMode);
   }
   return state;
 };
 
+// Our extension's state property mapper. Here we can pass the ui's `wowMode` state
+// into the terminal component's properties.
 exports.mapTermsState = (state, map) => {
   return Object.assign(map, {
     wowMode: state.ui.wowMode
   });
 };
 
+// We'll need to handle reflecting the `wowMode` property down through possible nested
+// parent/children terminal hierarchies. 
 const passProps = (uid, parentProps, props) => {
   return Object.assign(props, {
     wowMode: parentProps.wowMode
@@ -60,20 +86,31 @@ const passProps = (uid, parentProps, props) => {
 exports.getTermGroupProps = passProps;
 exports.getTermProps = passProps;
 
-// code based on
-// https://atom.io/packages/power-mode
-// https://github.com/itszero/rage-power/blob/master/index.jsx
+// The `decorateTerm` hook allows our extension to return a higher order react component. 
+// It supplies us with:
+// - Term: The terminal component.
+// - React: The enture React namespace.
+// - notify: Helper function for displaying notifications in the operating system.
+// 
+// The portions of this code dealing with the particle simulation are heavily based on:
+// - https://atom.io/packages/power-mode
+// - https://github.com/itszero/rage-power/blob/master/index.jsx
 exports.decorateTerm = (Term, { React, notify }) => {
+  // Define and return our higher order component.
   return class extends React.Component {
     constructor (props, context) {
       super(props, context);
+      // Since we'll be passing these functions around, we need to bind this 
+      // to each.
       this._drawFrame = this._drawFrame.bind(this);
       this._resizeCanvas = this._resizeCanvas.bind(this);
       this._onTerminal = this._onTerminal.bind(this);
       this._onCursorChange = this._onCursorChange.bind(this);
       this._shake = throttle(this._shake.bind(this), 100, { trailing: false });
       this._spawnParticles = throttle(this._spawnParticles.bind(this), 25, { trailing: false });
+      // Initial particle state
       this._particles = [];
+      // We'll set these up when the terminal is available in `_onTerminal`
       this._div = null;
       this._cursor = null;
       this._observer = null;
@@ -85,6 +122,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
       this._div = term.div_;
       this._cursor = term.cursorNode_;
       this._window = term.document_.defaultView;
+      // We'll need to observe cursor change events.
       this._observer = new MutationObserver(this._onCursorChange);
       this._observer.observe(this._cursor, {
         attributes: true,
@@ -94,6 +132,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
       this._initCanvas();
     }
 
+    // Set up our canvas element we'll use to do particle effects on.
     _initCanvas () {
       this._canvas = document.createElement('canvas');
       this._canvas.style.position = 'absolute';
@@ -112,6 +151,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
       this._canvas.height = window.innerHeight;
     }
 
+    // Draw the next frame in the particle simulation.
     _drawFrame () {
       this._canvasContext.clearRect(0, 0, this._canvas.width, this._canvas.height);
       this._particles.forEach((particle) => {
@@ -160,6 +200,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
     }
 
     _shake () {
+      // TODO: Maybe we should do this check in `_onCursorChange`?
       if(!this.props.wowMode) return;
 
       const intensity = 1 + 2 * Math.random();
@@ -173,6 +214,8 @@ exports.decorateTerm = (Term, { React, notify }) => {
 
     _onCursorChange () {
       this._shake();
+      // Get current coordinates of the cursor relative the container and 
+      // spawn new articles.
       const { top, left } = this._cursor.getBoundingClientRect();
       const origin = this._div.getBoundingClientRect();
       requestAnimationFrame(() => {
@@ -180,6 +223,8 @@ exports.decorateTerm = (Term, { React, notify }) => {
       });
     }
 
+    // Called when the props change, here we'll check if wow mode has gone 
+    // on -> off or off -> on and notify the user accordingly.
     componentWillReceiveProps (next) {
       if (next.wowMode && !this.props.wowMode) {
         notify('WOW such on');
@@ -187,8 +232,10 @@ exports.decorateTerm = (Term, { React, notify }) => {
         notify('WOW such off');
       }
     }
-
+ 
     render () {
+      // Return the default Term component with our custom onTerminal closure
+      // setting up and managing the particle effects.
       return React.createElement(Term, Object.assign({}, this.props, {
         onTerminal: this._onTerminal
       }));
@@ -196,6 +243,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
 
     componentWillUnmount () {
       document.body.removeChild(this._canvas);
+      // Stop observing _onCursorChange
       if (this._observer) {
         this._observer.disconnect();
       }
