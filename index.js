@@ -1,4 +1,3 @@
-// test!!!
 const throttle = require('lodash.throttle');
 const Color = require('color');
 const nameToHex = require('convert-css-color-name-to-hex');
@@ -62,7 +61,7 @@ function detectWowCommand(data) {
 exports.reduceUI = (state, action) => {
   switch (action.type) {
     case 'WOW_MODE_TOGGLE':
-			// Toggle wow mode!
+      // Toggle wow mode!
       return state.set('wowMode', !state.wowMode);
   }
   return state;
@@ -169,7 +168,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
       this._window.requestAnimationFrame(this._drawFrame);
     }
 
-		// Pushes `PARTICLE_NUM_RANGE` new particles into the simulation.
+    // Pushes `PARTICLE_NUM_RANGE` new particles into the simulation.
     _spawnParticles (x, y) {
       // const { colors } = this.props;
       const colors = this.props.wowMode
@@ -186,8 +185,8 @@ exports.decorateTerm = (Term, { React, notify }) => {
       }
     }
 
-		// Returns a particle of a specified color
-		// at some random offset from the input coordinates.
+    // Returns a particle of a specified color
+    // at some random offset from the input coordinates.
     _createParticle (x, y, color) {
       return {
         x,
@@ -203,8 +202,8 @@ exports.decorateTerm = (Term, { React, notify }) => {
       };
     }
 
-		// 'Shakes' the screen by applying a temporary translation 
-		// to the terminal container.
+    // 'Shakes' the screen by applying a temporary translation 
+    // to the terminal container.
     _shake () {
       // TODO: Maybe we should do this check in `_onCursorChange`?
       if(!this.props.wowMode) return;
