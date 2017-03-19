@@ -38,15 +38,8 @@ exports.middleware = (store) => (next) => (action) => {
   }
 };
 
-//
 // This function performs regex matching on expected shell output for 'wow' being input 
 // at the command line. Currently it supports output from bash, zsh and fish.
-//
-// *NOTE* 
-// Doing a substring test like this makes editing this file impossible while 
-// the plugin is active. Since the source code contains the substrings being matched,
-// we will actually just trigger wow mode upon opening the file and no data will be displayed.
-//
 function detectWowCommand(data) {
   const patterns = [
     'wow: command not found',
