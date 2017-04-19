@@ -45,7 +45,7 @@ function detectWowCommand(data) {
     'wow: command not found',
     'command not found: wow',
     'Unknown command \'wow\'',
-    '\'wow\' is not recognized.*'
+    '\'wow\' is not recognized'
   ];
   return new RegExp('(' + patterns.join(')|(') + ')').test(data)
 }
