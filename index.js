@@ -39,7 +39,7 @@ exports.middleware = (store) => (next) => (action) => {
 };
 
 // This function performs regex matching on expected shell output for 'wow' being input 
-// at the command line. Currently it supports output from bash, zsh and fish.
+// at the command line. Currently it supports output from bash, zsh, fish, cmd and powershell.
 function detectWowCommand(data) {
   const patterns = [
     'wow: command not found',
