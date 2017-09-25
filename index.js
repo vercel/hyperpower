@@ -3,6 +3,7 @@ const Color = require('color');
 const nameToHex = require('convert-css-color-name-to-hex');
 const toHex = (str) => Color(nameToHex(str)).hexString();
 const values = require('lodash.values');
+const xterm = require('xterm')
 
 // Constants for the particle simulation.
 const MAX_PARTICLES = 500;
