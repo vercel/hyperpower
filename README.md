@@ -21,6 +21,3 @@ Based on [`power-mode`](https://atom.io/packages/power-mode) and
 ## License
 
 MIT
-<p align="center">
-  <img src="https://cloud.githubusercontent.com/assets/13041/16820268/13c9bfe6-4905-11e6-8fe4-baf8fc8d9293.gif"/>
-</p>
