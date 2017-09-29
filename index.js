@@ -16,15 +16,15 @@ const PARTICLE_VELOCITY_RANGE = {
 
 // Our extension's custom redux middleware. Here we can intercept redux actions and respond to them.
 exports.middleware = (store) => (next) => (action) => {
-  // the redux `action` object contains a loose `type` string, the 
-  // 'SESSION_ADD_DATA' type identifier corresponds to an action in which 
+  // the redux `action` object contains a loose `type` string, the
+  // 'SESSION_ADD_DATA' type identifier corresponds to an action in which
   // the terminal wants to output information to the GUI.
   if ('SESSION_ADD_DATA' === action.type) {
-		
+
     // 'SESSION_ADD_DATA' actions hold the output text data in the `data` key.
     const { data } = action;
     if (detectWowCommand(data)) {
-      // Here, we are responding to 'wow' being input at the prompt. Since we don't 
+      // Here, we are responding to 'wow' being input at the prompt. Since we don't
       // want the "unknown command" output being displayed to the user, we don't thunk the next
       // middleware by calling `next(action)`. Instead, we dispatch a new action 'WOW_MODE_TOGGLE'.
       store.dispatch({
@@ -38,7 +38,7 @@ exports.middleware = (store) => (next) => (action) => {
   }
 };
 
-// This function performs regex matching on expected shell output for 'wow' being input 
+// This function performs regex matching on expected shell output for 'wow' being input
 // at the command line. Currently it supports output from bash, zsh, fish, cmd and powershell.
 function detectWowCommand(data) {
   const patterns = [
@@ -50,7 +50,7 @@ function detectWowCommand(data) {
   return new RegExp('(' + patterns.join(')|(') + ')').test(data)
 }
 
-// Our extension's custom ui state reducer. Here we can listen for our 'WOW_MODE_TOGGLE' action 
+// Our extension's custom ui state reducer. Here we can listen for our 'WOW_MODE_TOGGLE' action
 // and modify the state accordingly.
 exports.reduceUI = (state, action) => {
   switch (action.type) {
@@ -70,7 +70,7 @@ exports.mapTermsState = (state, map) => {
 };
 
 // We'll need to handle reflecting the `wowMode` property down through possible nested
-// parent/children terminal hierarchies. 
+// parent/children terminal hierarchies.
 const passProps = (uid, parentProps, props) => {
   return Object.assign(props, {
     wowMode: parentProps.wowMode
@@ -80,12 +80,12 @@ const passProps = (uid, parentProps, props) => {
 exports.getTermGroupProps = passProps;
 exports.getTermProps = passProps;
 
-// The `decorateTerm` hook allows our extension to return a higher order react component. 
+// The `decorateTerm` hook allows our extension to return a higher order react component.
 // It supplies us with:
 // - Term: The terminal component.
 // - React: The enture React namespace.
 // - notify: Helper function for displaying notifications in the operating system.
-// 
+//
 // The portions of this code dealing with the particle simulation are heavily based on:
 // - https://atom.io/packages/power-mode
 // - https://github.com/itszero/rage-power/blob/master/index.jsx
@@ -94,7 +94,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
   return class extends React.Component {
     constructor (props, context) {
       super(props, context);
-      // Since we'll be passing these functions around, we need to bind this 
+      // Since we'll be passing these functions around, we need to bind this
       // to each.
       this._drawFrame = this._drawFrame.bind(this);
       this._resizeCanvas = this._resizeCanvas.bind(this);
@@ -159,12 +159,16 @@ exports.decorateTerm = (Term, { React, notify }) => {
       this._particles = this._particles
         .slice(Math.max(this._particles.length - MAX_PARTICLES, 0))
         .filter((particle) => particle.alpha > 0.1);
-      this._window.requestAnimationFrame(this._drawFrame);
+      if (this._particles.length > 0 || this.props.needsRedraw) {
+        this._window.requestAnimationFrame(this._drawFrame);
+      }
+      this.props.needsRedraw = this._particles.length === 0;
     }
 
     // Pushes `PARTICLE_NUM_RANGE` new particles into the simulation.
     _spawnParticles (x, y) {
       // const { colors } = this.props;
+      const length = this._particles.length;
       const colors = this.props.wowMode
         ? values(this.props.colors).map(toHex)
         : [toHex(this.props.cursorColor)];
@@ -176,6 +180,9 @@ exports.decorateTerm = (Term, { React, notify }) => {
         const b = parseInt(colorCode.slice(5, 7), 16);
         const color = [r, g, b];
         this._particles.push(this._createParticle(x, y, color));
+      }
+      if (length === 0) {
+        this._window.requestAnimationFrame(this._drawFrame);
       }
     }
 
@@ -196,7 +203,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
       };
     }
 
-    // 'Shakes' the screen by applying a temporary translation 
+    // 'Shakes' the screen by applying a temporary translation
     // to the terminal container.
     _shake () {
       // TODO: Maybe we should do this check in `_onCursorChange`?
@@ -213,7 +220,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
 
     _onCursorChange () {
       this._shake();
-      // Get current coordinates of the cursor relative the container and 
+      // Get current coordinates of the cursor relative the container and
       // spawn new articles.
       const { top, left } = this._cursor.getBoundingClientRect();
       const origin = this._div.getBoundingClientRect();
@@ -222,7 +229,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
       });
     }
 
-    // Called when the props change, here we'll check if wow mode has gone 
+    // Called when the props change, here we'll check if wow mode has gone
     // on -> off or off -> on and notify the user accordingly.
     componentWillReceiveProps (next) {
       if (next.wowMode && !this.props.wowMode) {
@@ -231,7 +238,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
         notify('WOW such off');
       }
     }
- 
+
     render () {
       // Return the default Term component with our custom onTerminal closure
       // setting up and managing the particle effects.
