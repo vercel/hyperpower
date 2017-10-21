@@ -3,7 +3,8 @@
   "version": "0.3.0",
   "keywords": [
     "hyper",
-    "hyper.app"
+    "hyper.app",
+    "hyper-plugin"
   ],
   "description": "Extension for particle effects in Hyper",
   "repository": {
