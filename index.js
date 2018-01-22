@@ -98,8 +98,8 @@ exports.decorateTerm = (Term, { React, notify }) => {
       // to each.
       this._drawFrame = this._drawFrame.bind(this);
       this._resizeCanvas = this._resizeCanvas.bind(this);
-      this._onTerminal = this._onTerminal.bind(this);
-      this._onCursorChange = this._onCursorChange.bind(this);
+      this._onDecorated = this._onDecorated.bind(this);
+      this._onCursorMove = this._onCursorMove.bind(this);
       this._shake = throttle(this._shake.bind(this), 100, { trailing: false });
       this._spawnParticles = throttle(this._spawnParticles.bind(this), 25, { trailing: false });
       // Initial particle state
@@ -111,18 +111,20 @@ exports.decorateTerm = (Term, { React, notify }) => {
       this._canvas = null;
     }
 
-    _onTerminal (term) {
-      if (this.props.onTerminal) this.props.onTerminal(term);
-      this._div = term.div_;
-      this._cursor = term.cursorNode_;
-      this._window = term.document_.defaultView;
+    _onDecorated (term) {
+      if (this.props.onDecorated) this.props.onDecorated(term);
+      this._div = term.termRef;
+      //this._cursor = term.cursorNode_;
+      this._window = window;//term.document_.defaultView;
       // We'll need to observe cursor change events.
+      /*
       this._observer = new MutationObserver(this._onCursorChange);
       this._observer.observe(this._cursor, {
         attributes: true,
         childList: false,
         characterData: false
       });
+      */
       this._initCanvas();
     }
 
@@ -147,7 +149,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
 
     // Draw the next frame in the particle simulation.
     _drawFrame () {
-      this._canvasContext.clearRect(0, 0, this._canvas.width, this._canvas.height);
+      this._particles.length && this._canvasContext.clearRect(0, 0, this._canvas.width, this._canvas.height);
       this._particles.forEach((particle) => {
         particle.velocity.y += PARTICLE_GRAVITY;
         particle.x += particle.velocity.x;
@@ -211,14 +213,13 @@ exports.decorateTerm = (Term, { React, notify }) => {
       }, 75);
     }
 
-    _onCursorChange () {
+    _onCursorMove (cursorFrame) {
+      if (this.props.onCursorMove) this.props.onCursorMove(cursorFrame);
       this._shake();
-      // Get current coordinates of the cursor relative the container and 
-      // spawn new articles.
-      const { top, left } = this._cursor.getBoundingClientRect();
+      const { x, y } = cursorFrame;
       const origin = this._div.getBoundingClientRect();
       requestAnimationFrame(() => {
-        this._spawnParticles(left + origin.left, top + origin.top);
+        this._spawnParticles(x + origin.left, y + origin.top);
       });
     }
 
@@ -236,7 +237,8 @@ exports.decorateTerm = (Term, { React, notify }) => {
       // Return the default Term component with our custom onTerminal closure
       // setting up and managing the particle effects.
       return React.createElement(Term, Object.assign({}, this.props, {
-        onTerminal: this._onTerminal
+        onDecorated: this._onDecorated,
+        onCursorMove: this._onCursorMove
       }));
     }
 
