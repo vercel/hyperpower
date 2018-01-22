@@ -104,27 +104,14 @@ exports.decorateTerm = (Term, { React, notify }) => {
       this._spawnParticles = throttle(this._spawnParticles.bind(this), 25, { trailing: false });
       // Initial particle state
       this._particles = [];
-      // We'll set these up when the terminal is available in `_onTerminal`
+      // We'll set these up when the terminal is available in `_onDecorated`
       this._div = null;
-      this._cursor = null;
-      this._observer = null;
       this._canvas = null;
     }
 
     _onDecorated (term) {
       if (this.props.onDecorated) this.props.onDecorated(term);
       this._div = term.termRef;
-      //this._cursor = term.cursorNode_;
-      this._window = window;//term.document_.defaultView;
-      // We'll need to observe cursor change events.
-      /*
-      this._observer = new MutationObserver(this._onCursorChange);
-      this._observer.observe(this._cursor, {
-        attributes: true,
-        childList: false,
-        characterData: false
-      });
-      */
       this._initCanvas();
     }
 
@@ -138,8 +125,8 @@ exports.decorateTerm = (Term, { React, notify }) => {
       this._canvas.width = window.innerWidth;
       this._canvas.height = window.innerHeight;
       document.body.appendChild(this._canvas);
-      this._window.requestAnimationFrame(this._drawFrame);
-      this._window.addEventListener('resize', this._resizeCanvas);
+      window.requestAnimationFrame(this._drawFrame);
+      window.addEventListener('resize', this._resizeCanvas);
     }
 
     _resizeCanvas () {
@@ -161,7 +148,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
       this._particles = this._particles
         .slice(Math.max(this._particles.length - MAX_PARTICLES, 0))
         .filter((particle) => particle.alpha > 0.1);
-      this._window.requestAnimationFrame(this._drawFrame);
+      window.requestAnimationFrame(this._drawFrame);
     }
 
     // Pushes `PARTICLE_NUM_RANGE` new particles into the simulation.
@@ -201,7 +188,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
     // 'Shakes' the screen by applying a temporary translation 
     // to the terminal container.
     _shake () {
-      // TODO: Maybe we should do this check in `_onCursorChange`?
+      // TODO: Maybe we should do this check in `_onCursorMove`?
       if(!this.props.wowMode) return;
 
       const intensity = 1 + 2 * Math.random();
@@ -244,10 +231,6 @@ exports.decorateTerm = (Term, { React, notify }) => {
 
     componentWillUnmount () {
       document.body.removeChild(this._canvas);
-      // Stop observing _onCursorChange
-      if (this._observer) {
-        this._observer.disconnect();
-      }
     }
   }
 };
