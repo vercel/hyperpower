@@ -137,17 +137,20 @@ exports.decorateTerm = (Term, { React, notify }) => {
     // Draw the next frame in the particle simulation.
     _drawFrame () {
       this._particles.length && this._canvasContext.clearRect(0, 0, this._canvas.width, this._canvas.height);
+      // remove any particles below the visibility threshold before we render them again
+      this._particles = this._particles.filter((particle) => particle.alpha > 0.1);
       this._particles.forEach((particle) => {
         particle.velocity.y += PARTICLE_GRAVITY;
         particle.x += particle.velocity.x;
         particle.y += particle.velocity.y;
+        console.log(particle.alpha);
         particle.alpha *= PARTICLE_ALPHA_FADEOUT;
         this._canvasContext.fillStyle = `rgba(${particle.color.join(',')}, ${particle.alpha})`;
         this._canvasContext.fillRect(Math.round(particle.x - 1), Math.round(particle.y - 1), 3, 3);
       });
       this._particles = this._particles
-        .slice(Math.max(this._particles.length - MAX_PARTICLES, 0))
-        .filter((particle) => particle.alpha > 0.1);
+        .slice(Math.max(this._particles.length - MAX_PARTICLES, 0));
+
       window.requestAnimationFrame(this._drawFrame);
     }
 
