@@ -111,7 +111,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
 
     _onDecorated (term) {
       if (this.props.onDecorated) this.props.onDecorated(term);
-      this._div = term.termRef;
+      this._div = term ? term.termRef : null;
       this._initCanvas();
     }
 
