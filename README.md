@@ -1,6 +1,8 @@
 
 # Hyperpower
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/zeit/hyperpower.svg)](https://greenkeeper.io/)
+
 Extension for Hyper that turns on power mode, with bonus `wow` mode.
 
 ![hyper](https://cloud.githubusercontent.com/assets/13041/16820268/13c9bfe6-4905-11e6-8fe4-baf8fc8d9293.gif)
