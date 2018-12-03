@@ -1,9 +1,10 @@
 {
   "name": "hyperpower",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "keywords": [
     "hyper",
-    "hyper.app"
+    "hyper.app",
+    "hyper-plugin"
   ],
   "description": "Extension for particle effects in Hyper",
   "repository": {
