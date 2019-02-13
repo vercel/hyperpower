@@ -172,7 +172,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
         this._particles.push(this._createParticle(x, y, color));
       }
       if (length === 0) {
-        this._window.requestAnimationFrame(this._drawFrame);
+        window.requestAnimationFrame(this._drawFrame);
       }
     }
 
