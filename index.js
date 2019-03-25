@@ -3,20 +3,11 @@ const defaultConfig = {
   colorMode: 'custom', // 'cursor', 'custom', 'rainbow'
   colors: ['red', 'green', 'blue']
 };
-
-const Color = require('color');
 const throttle = require('lodash.throttle');
+const Color = require('color');
 const nameToHex = require('convert-css-color-name-to-hex');
 const toHex = (str) => Color(nameToHex(str)).hex();
 const values = require('lodash.values');
-const RAINBOW_COLORS = [
-  '#fe0000',
-  '#ffa500',
-  '#ffff00',
-  '#00fb00',
-  '#009eff',
-  '#6531ff'
-].map(color => Color(color).hex());
 
 // Constants for the particle simulation.
 const MAX_PARTICLES = 500;
@@ -36,9 +27,7 @@ exports.middleware = (store) => (next) => (action) => {
   if ('SESSION_ADD_DATA' === action.type) {
 
     // 'SESSION_ADD_DATA' actions hold the output text data in the `data` key.
-    const {
-      data
-    } = action;
+    const { data } = action;
     if (detectWowCommand(data)) {
       // Here, we are responding to 'wow' being input at the prompt. Since we don't
       // want the "unknown command" output being displayed to the user, we don't thunk the next
@@ -106,13 +95,10 @@ exports.getTermProps = passProps;
 // The portions of this code dealing with the particle simulation are heavily based on:
 // - https://atom.io/packages/power-mode
 // - https://github.com/itszero/rage-power/blob/master/index.jsx
-exports.decorateTerm = (Term, {
-  React,
-  notify
-}) => {
+exports.decorateTerm = (Term, { React, notify }) => {
   // Define and return our higher order component.
   return class extends React.Component {
-    constructor(props, context) {
+    constructor (props, context) {
       super(props, context);
       // Since we'll be passing these functions around, we need to bind this
       // to each.
@@ -121,12 +107,8 @@ exports.decorateTerm = (Term, {
       this._resizeCanvas = this._resizeCanvas.bind(this);
       this._onDecorated = this._onDecorated.bind(this);
       this._onCursorMove = this._onCursorMove.bind(this);
-      this._shake = throttle(this._shake.bind(this), 100, {
-        trailing: false
-      });
-      this._spawnParticles = throttle(this._spawnParticles.bind(this), 25, {
-        trailing: false
-      });
+      this._shake = throttle(this._shake.bind(this), 100, { trailing: false });
+      this._spawnParticles = throttle(this._spawnParticles.bind(this), 25, { trailing: false });
       // Initial particle state
       this._particles = [];
       // We'll set these up when the terminal is available in `_onDecorated`
@@ -139,14 +121,13 @@ exports.decorateTerm = (Term, {
       });
     }
 
-    _loadSettings() {
+    loadSettings() {
       const userSettings = config.getConfig().hyperPower || {};
       this._settings = {
         shake: userSettings.shake != null ? userSettings.shake : defaultConfig.shake,
         colorMode: userSettings.colorMode || defaultConfig.colorMode,
         colors: userSettings.colors || defaultConfig.colors
       };
-      console.log(this._settings.shake);
     }
 
     _getColors() {
@@ -159,14 +140,14 @@ exports.decorateTerm = (Term, {
       }
     }
 
-    _onDecorated(term) {
+    _onDecorated (term) {
       if (this.props.onDecorated) this.props.onDecorated(term);
       this._div = term ? term.termRef : null;
       this._initCanvas();
     }
 
     // Set up our canvas element we'll use to do particle effects on.
-    _initCanvas() {
+    _initCanvas () {
       this._canvas = document.createElement('canvas');
       this._canvas.style.position = 'absolute';
       this._canvas.style.top = '0';
@@ -179,13 +160,13 @@ exports.decorateTerm = (Term, {
       window.addEventListener('resize', this._resizeCanvas);
     }
 
-    _resizeCanvas() {
+    _resizeCanvas () {
       this._canvas.width = window.innerWidth;
       this._canvas.height = window.innerHeight;
     }
 
     // Draw the next frame in the particle simulation.
-    _drawFrame() {
+    _drawFrame () {
       this._particles.length && this._canvasContext.clearRect(0, 0, this._canvas.width, this._canvas.height);
       this._particles.forEach((particle) => {
         particle.velocity.y += PARTICLE_GRAVITY;
@@ -205,7 +186,7 @@ exports.decorateTerm = (Term, {
     }
 
     // Pushes `PARTICLE_NUM_RANGE` new particles into the simulation.
-    _spawnParticles(x, y) {
+    _spawnParticles (x, y) {
       // const { colors } = this.props;
       const length = this._particles.length;
       const colors = this._getColors();
@@ -225,7 +206,7 @@ exports.decorateTerm = (Term, {
 
     // Returns a particle of a specified color
     // at some random offset from the input coordinates.
-    _createParticle(x, y, color) {
+    _createParticle (x, y, color) {
       return {
         x,
         y: y,
@@ -242,10 +223,9 @@ exports.decorateTerm = (Term, {
 
     // 'Shakes' the screen by applying a temporary translation
     // to the terminal container.
-    _shake() {
-      if (this._settings.shake === false || !this.props.wowMode) {
-        return;
-      }
+    _shake () {
+      // TODO: Maybe we should do this check in `_onCursorMove`?
+      if (this._settings.shake === false || !this.props.wowMode) return;
 
       const intensity = 1 + 2 * Math.random();
       const x = intensity * (Math.random() > 0.5 ? -1 : 1);
@@ -256,13 +236,10 @@ exports.decorateTerm = (Term, {
       }, 75);
     }
 
-    _onCursorMove(cursorFrame) {
+    _onCursorMove (cursorFrame) {
       if (this.props.onCursorMove) this.props.onCursorMove(cursorFrame);
       this._shake();
-      const {
-        x,
-        y
-      } = cursorFrame;
+      const { x, y } = cursorFrame;
       const origin = this._div.getBoundingClientRect();
       requestAnimationFrame(() => {
         this._spawnParticles(x + origin.left, y + origin.top);
@@ -271,7 +248,7 @@ exports.decorateTerm = (Term, {
 
     // Called when the props change, here we'll check if wow mode has gone
     // on -> off or off -> on and notify the user accordingly.
-    componentWillReceiveProps(next) {
+    componentWillReceiveProps (next) {
       if (next.wowMode && !this.props.wowMode) {
         notify('WOW such on');
       } else if (!next.wowMode && this.props.wowMode) {
@@ -279,7 +256,7 @@ exports.decorateTerm = (Term, {
       }
     }
 
-    render() {
+    render () {
       // Return the default Term component with our custom onTerminal closure
       // setting up and managing the particle effects.
       return React.createElement(Term, Object.assign({}, this.props, {
@@ -288,7 +265,7 @@ exports.decorateTerm = (Term, {
       }));
     }
 
-    componentWillUnmount() {
+    componentWillUnmount () {
       document.body.removeChild(this._canvas);
     }
   }
