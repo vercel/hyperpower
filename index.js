@@ -8,6 +8,14 @@ const Color = require('color');
 const nameToHex = require('convert-css-color-name-to-hex');
 const toHex = (str) => Color(nameToHex(str)).hex();
 const values = require('lodash.values');
+const RAINBOW_COLORS = [	
+  '#a800ff',	
+  '#0079ff',	
+  '#00f11d',	
+  '#ffef00',	
+  '#ff7f00',	
+  '#ff0900'	
+].map(color => Color(color).hex());
 
 // Constants for the particle simulation.
 const MAX_PARTICLES = 500;
@@ -121,7 +129,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
       });
     }
 
-    loadSettings() {
+    _loadSettings() {
       const userSettings = config.getConfig().hyperPower || {};
       this._settings = {
         shake: userSettings.shake != null ? userSettings.shake : defaultConfig.shake,
