@@ -16,7 +16,7 @@ to `plugins` in `~/.hyper.js`.
 
 ## Configure
 
-Add a line to your hyper configuration (`~/.hyper.js`) :
+Add a `hyperPower` section to your hyper configuration (`~/.hyper.js`) with any of the following properties. Missing properties will use these default values:
 
 ```js
 module.exports = {
@@ -25,7 +25,11 @@ module.exports = {
     hyperPower: {
       shake: false,
       colorMode: 'cursor', // 'cursor', 'custom', 'rainbow'
-      colors: ['#eee']
+      colors: ['#eee'],
+      particleSize: 3,
+      minSpawnCount: 10,
+      maxSpawnCount: 12,
+      maximumParticles: 500
     }
   }
   // rest of the file

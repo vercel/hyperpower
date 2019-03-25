@@ -1,13 +1,18 @@
 const defaultConfig = {
   shake: null, // null so false can override 'wow' mode
   colorMode: 'custom', // 'cursor', 'custom', 'rainbow'
-  colors: ['red', 'green', 'blue']
+  colors: ['red', 'green', 'blue'],
+  particleSize: 3,
+  minSpawnCount: 10,
+  maxSpawnCount: 12,
+  maximumParticles: 500
 };
 const throttle = require('lodash.throttle');
 const Color = require('color');
 const nameToHex = require('convert-css-color-name-to-hex');
 const toHex = (str) => Color(nameToHex(str)).hex();
 const values = require('lodash.values');
+const random = require('lodash.random');
 const RAINBOW_COLORS = [	
   '#a800ff',	
   '#0079ff',	
@@ -18,8 +23,6 @@ const RAINBOW_COLORS = [
 ].map(color => Color(color).hex());
 
 // Constants for the particle simulation.
-const MAX_PARTICLES = 500;
-const PARTICLE_NUM_RANGE = () => 5 + Math.round(Math.random() * 5);
 const PARTICLE_GRAVITY = 0.075;
 const PARTICLE_ALPHA_FADEOUT = 0.96;
 const PARTICLE_VELOCITY_RANGE = {
@@ -134,7 +137,11 @@ exports.decorateTerm = (Term, { React, notify }) => {
       this._settings = {
         shake: userSettings.shake != null ? userSettings.shake : defaultConfig.shake,
         colorMode: userSettings.colorMode || defaultConfig.colorMode,
-        colors: userSettings.colors || defaultConfig.colors
+        colors: userSettings.colors || defaultConfig.colors,
+        particleSize: userSettings.particleSize || defaultConfig.particleSize,
+        minSpawnCount: userSettings.minSpawnCount || defaultConfig.minSpawnCount,
+        maxSpawnCount: userSettings.minSpawnCount || defaultConfig.maxSpawnCount,
+        maximumParticles: userSettings.maximumParticles || defaultConfig.maximumParticles
       };
     }
 
@@ -175,6 +182,8 @@ exports.decorateTerm = (Term, { React, notify }) => {
 
     // Draw the next frame in the particle simulation.
     _drawFrame () {
+      const particleSize = this._settings.particleSize;
+      const maximumParticles = this._settings.maximumParticles;
       this._particles.length && this._canvasContext.clearRect(0, 0, this._canvas.width, this._canvas.height);
       this._particles.forEach((particle) => {
         particle.velocity.y += PARTICLE_GRAVITY;
@@ -182,10 +191,10 @@ exports.decorateTerm = (Term, { React, notify }) => {
         particle.y += particle.velocity.y;
         particle.alpha *= PARTICLE_ALPHA_FADEOUT;
         this._canvasContext.fillStyle = `rgba(${particle.color.join(',')}, ${particle.alpha})`;
-        this._canvasContext.fillRect(Math.round(particle.x - 1), Math.round(particle.y - 1), 3, 3);
+        this._canvasContext.fillRect(Math.round(particle.x - 1), Math.round(particle.y - 1), particleSize, particleSize);
       });
       this._particles = this._particles
-        .slice(Math.max(this._particles.length - MAX_PARTICLES, 0))
+        .slice(Math.max(this._particles.length - maximumParticles, 0))
         .filter((particle) => particle.alpha > 0.1);
       if (this._particles.length > 0 || this.props.needsRedraw) {
         window.requestAnimationFrame(this._drawFrame);
@@ -198,7 +207,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
       // const { colors } = this.props;
       const length = this._particles.length;
       const colors = this._getColors();
-      const numParticles = PARTICLE_NUM_RANGE();
+      const numParticles = random(this._settings.maxSpawnCount, this._settings.maxSpawnCount);
       for (let i = 0; i < numParticles; i++) {
         const colorCode = colors[i % colors.length];
         const r = parseInt(colorCode.slice(1, 3), 16);
