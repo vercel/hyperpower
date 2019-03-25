@@ -1,6 +1,6 @@
 {
   "name": "hyperpower",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "keywords": [
     "hyper",
     "hyper.app",
@@ -12,7 +12,7 @@
     "url": "git+https://github.com/zeit/hyperpower.git"
   },
   "dependencies": {
-    "color": "0.11.3",
+    "color": "3.1.0",
     "convert-css-color-name-to-hex": "0.1.1",
     "lodash.throttle": "4.1.1",
     "lodash.values": "4.3.0"
