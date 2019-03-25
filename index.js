@@ -1,9 +1,14 @@
 const defaultConfig = {
-  shake: false,
+  shake: null,
   colorMode: 'cursor', // 'cursor', 'custom', 'rainbow'
   colors: ['red']
 };
+
 const Color = require('color');
+const throttle = require('lodash.throttle');
+const nameToHex = require('convert-css-color-name-to-hex');
+const toHex = (str) => Color(nameToHex(str)).hex();
+const values = require('lodash.values');
 const RAINBOW_COLORS = [
   '#fe0000',
   '#ffa500',
@@ -12,11 +17,6 @@ const RAINBOW_COLORS = [
   '#009eff',
   '#6531ff'
 ].map(color => Color(color).hex());
-
-const throttle = require('lodash.throttle');
-const nameToHex = require('convert-css-color-name-to-hex');
-const toHex = (str) => Color(nameToHex(str)).hex();
-const values = require('lodash.values');
 
 // Constants for the particle simulation.
 const MAX_PARTICLES = 500;
@@ -28,59 +28,135 @@ const PARTICLE_VELOCITY_RANGE = {
   y: [-3.5, -1.5]
 };
 
+// Our extension's custom redux middleware. Here we can intercept redux actions and respond to them.
+exports.middleware = (store) => (next) => (action) => {
+  // the redux `action` object contains a loose `type` string, the
+  // 'SESSION_ADD_DATA' type identifier corresponds to an action in which
+  // the terminal wants to output information to the GUI.
+  if ('SESSION_ADD_DATA' === action.type) {
+
+    // 'SESSION_ADD_DATA' actions hold the output text data in the `data` key.
+    const {
+      data
+    } = action;
+    if (detectWowCommand(data)) {
+      // Here, we are responding to 'wow' being input at the prompt. Since we don't
+      // want the "unknown command" output being displayed to the user, we don't thunk the next
+      // middleware by calling `next(action)`. Instead, we dispatch a new action 'WOW_MODE_TOGGLE'.
+      store.dispatch({
+        type: 'WOW_MODE_TOGGLE'
+      });
+    } else {
+      next(action);
+    }
+  } else {
+    next(action);
+  }
+};
+
+// This function performs regex matching on expected shell output for 'wow' being input
+// at the command line. Currently it supports output from bash, zsh, fish, cmd and powershell.
+function detectWowCommand(data) {
+  const patterns = [
+    'wow: command not found',
+    'command not found: wow',
+    'Unknown command \'wow\'',
+    '\'wow\' is not recognized*',
+    '\'wow\'은\\(는\\) 내부 또는 외부 명령.*'
+  ];
+  return new RegExp('(' + patterns.join(')|(') + ')').test(data)
+}
+
+// Our extension's custom ui state reducer. Here we can listen for our 'WOW_MODE_TOGGLE' action
+// and modify the state accordingly.
+exports.reduceUI = (state, action) => {
+  switch (action.type) {
+    case 'WOW_MODE_TOGGLE':
+      // Toggle wow mode!
+      return state.set('wowMode', !state.wowMode);
+  }
+  return state;
+};
+
+// Our extension's state property mapper. Here we can pass the ui's `wowMode` state
+// into the terminal component's properties.
+exports.mapTermsState = (state, map) => {
+  return Object.assign(map, {
+    wowMode: state.ui.wowMode
+  });
+};
+
+// We'll need to handle reflecting the `wowMode` property down through possible nested
+// parent/children terminal hierarchies.
+const passProps = (uid, parentProps, props) => {
+  return Object.assign(props, {
+    wowMode: parentProps.wowMode
+  });
+}
+
+exports.getTermGroupProps = passProps;
+exports.getTermProps = passProps;
 
 // The `decorateTerm` hook allows our extension to return a higher order react component.
 // It supplies us with:
 // - Term: The terminal component.
 // - React: The enture React namespace.
+// - notify: Helper function for displaying notifications in the operating system.
 //
 // The portions of this code dealing with the particle simulation are heavily based on:
 // - https://atom.io/packages/power-mode
 // - https://github.com/itszero/rage-power/blob/master/index.jsx
 exports.decorateTerm = (Term, {
   React,
+  notify
 }) => {
-
   // Define and return our higher order component.
   return class extends React.Component {
     constructor(props, context) {
       super(props, context);
-
       // Since we'll be passing these functions around, we need to bind this
       // to each.
+      this._getColors = this._getColors.bind(this);
       this._drawFrame = this._drawFrame.bind(this);
       this._resizeCanvas = this._resizeCanvas.bind(this);
       this._onDecorated = this._onDecorated.bind(this);
       this._onCursorMove = this._onCursorMove.bind(this);
-      this._getColors = this._getColors.bind(this);
       this._shake = throttle(this._shake.bind(this), 100, {
         trailing: false
       });
       this._spawnParticles = throttle(this._spawnParticles.bind(this), 25, {
         trailing: false
       });
-
-      this._loadSettings();
-      config.subscribe(() => {
-        this._loadSettings();
-      });
-
       // Initial particle state
       this._particles = [];
       // We'll set these up when the terminal is available in `_onDecorated`
       this._div = null;
       this._canvas = null;
+
+      this._loadSettings();
+      config.subscribe(() => {
+        this._loadSettings();
+      });
     }
 
     _loadSettings() {
       const userSettings = config.getConfig().hyperPower || {};
-      console.log(userSettings);
       this._settings = {
-        shake: userSettings.shake || defaultConfig.shake,
+        shake: userSettings.shake != null ? userSettings.shake : defaultConfig.shake,
         colorMode: userSettings.colorMode || defaultConfig.colorMode,
         colors: userSettings.colors || defaultConfig.colors
       };
-      console.log(this._settings);
+      console.log(this._settings.shake);
+    }
+
+    _getColors() {
+      if (this._settings.colorMode === 'cursor') {
+        return [toHex(this.props.cursorColor)];
+      } else if (this._settings.colorMode === 'rainbow') {
+        return RAINBOW_COLORS;
+      } else {
+        return values(this._settings.colors).map(toHex);
+      }
     }
 
     _onDecorated(term) {
@@ -128,16 +204,6 @@ exports.decorateTerm = (Term, {
       this.props.needsRedraw = this._particles.length === 0;
     }
 
-    _getColors() {
-      if (this._settings.colorMode === "cursor") {
-        return [toHex(this.props.cursorColor)];
-      } else if (this._settings.colorMode === "rainbow") {
-        return RAINBOW_COLORS;
-      } else {
-        return values(this._settings.colors).map(toHex);
-      }
-    }
-
     // Pushes `PARTICLE_NUM_RANGE` new particles into the simulation.
     _spawnParticles(x, y) {
       // const { colors } = this.props;
@@ -177,7 +243,7 @@ exports.decorateTerm = (Term, {
     // 'Shakes' the screen by applying a temporary translation
     // to the terminal container.
     _shake() {
-      if (!this._settings.shake) {
+      if (this._settings.shake === false || !this.props.wowMode) {
         return;
       }
 
@@ -201,6 +267,16 @@ exports.decorateTerm = (Term, {
       requestAnimationFrame(() => {
         this._spawnParticles(x + origin.left, y + origin.top);
       });
+    }
+
+    // Called when the props change, here we'll check if wow mode has gone
+    // on -> off or off -> on and notify the user accordingly.
+    componentWillReceiveProps(next) {
+      if (next.wowMode && !this.props.wowMode) {
+        notify('WOW such on');
+      } else if (!next.wowMode && this.props.wowMode) {
+        notify('WOW such off');
+      }
     }
 
     render() {
