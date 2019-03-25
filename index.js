@@ -1,7 +1,7 @@
 const defaultConfig = {
-  shake: null,
-  colorMode: 'cursor', // 'cursor', 'custom', 'rainbow'
-  colors: ['red']
+  shake: null, // null so false can override 'wow' mode
+  colorMode: 'custom', // 'cursor', 'custom', 'rainbow'
+  colors: ['red', 'green', 'blue']
 };
 
 const Color = require('color');

@@ -1,11 +1,9 @@
-
 # Hyperpower
 
 Extension for Hyper that turns on power mode.
 
-* Simple configuration in `.hyper.js`
-* Bonus `wow` mode
-
+- Simple configuration in `.hyper.js`
+- Bonus `wow` mode
 
 ![hyper](https://cloud.githubusercontent.com/assets/13041/16820268/13c9bfe6-4905-11e6-8fe4-baf8fc8d9293.gif)
 
@@ -16,7 +14,6 @@ Extension for Hyper that turns on power mode.
 Install [Hyper](https://hyper.is) and add `hyperpower`
 to `plugins` in `~/.hyper.js`.
 
-
 ## Configure
 
 Add a line to your hyper configuration (`~/.hyper.js`) :
@@ -26,13 +23,13 @@ module.exports = {
   config: {
     // rest of the config
     hyperPower: {
-        shake: false,
-        colorMode: 'cursor', // 'cursor', 'custom'
-        colors: ['#eee']
+      shake: false,
+      colorMode: 'cursor', // 'cursor', 'custom', 'rainbow'
+      colors: ['#eee']
     }
   }
   // rest of the file
-}
+};
 ```
 
 ## Credits
