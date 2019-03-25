@@ -1,9 +1,8 @@
-var config = {
+const defaultConfig = {
   shake: false,
-  colorMode: 'rainbow', // 'cursor', 'custom'
-  colors: ['cyan']
+  colorMode: 'cursor', // 'cursor', 'custom', 'rainbow'
+  colors: ['red']
 };
-const electron = require('electron');
 const Color = require('color');
 const RAINBOW_COLORS = [
   '#fe0000',
@@ -29,6 +28,7 @@ const PARTICLE_VELOCITY_RANGE = {
   y: [-3.5, -1.5]
 };
 
+
 // The `decorateTerm` hook allows our extension to return a higher order react component.
 // It supplies us with:
 // - Term: The terminal component.
@@ -37,17 +37,15 @@ const PARTICLE_VELOCITY_RANGE = {
 // The portions of this code dealing with the particle simulation are heavily based on:
 // - https://atom.io/packages/power-mode
 // - https://github.com/itszero/rage-power/blob/master/index.jsx
-exports.decorateTerm = (Term, { React }) => {
-  // There might be a better way to get this config.
-  config = Object.assign(config, electron.remote.app.config.getConfig().hyperPower);
+exports.decorateTerm = (Term, {
+  React,
+}) => {
 
-  console.log(electron.remote.app.config.getConfig().hyperPower);
-  console.log(config);
-  
   // Define and return our higher order component.
   return class extends React.Component {
-    constructor (props, context) {
+    constructor(props, context) {
       super(props, context);
+
       // Since we'll be passing these functions around, we need to bind this
       // to each.
       this._drawFrame = this._drawFrame.bind(this);
@@ -55,8 +53,18 @@ exports.decorateTerm = (Term, { React }) => {
       this._onDecorated = this._onDecorated.bind(this);
       this._onCursorMove = this._onCursorMove.bind(this);
       this._getColors = this._getColors.bind(this);
-      this._shake = throttle(this._shake.bind(this), 100, { trailing: false });
-      this._spawnParticles = throttle(this._spawnParticles.bind(this), 25, { trailing: false });
+      this._shake = throttle(this._shake.bind(this), 100, {
+        trailing: false
+      });
+      this._spawnParticles = throttle(this._spawnParticles.bind(this), 25, {
+        trailing: false
+      });
+
+      this._loadSettings();
+      config.subscribe(() => {
+        this._loadSettings();
+      });
+
       // Initial particle state
       this._particles = [];
       // We'll set these up when the terminal is available in `_onDecorated`
@@ -64,14 +72,25 @@ exports.decorateTerm = (Term, { React }) => {
       this._canvas = null;
     }
 
-    _onDecorated (term) {
+    _loadSettings() {
+      const userSettings = config.getConfig().hyperPower || {};
+      console.log(userSettings);
+      this._settings = {
+        shake: userSettings.shake || defaultConfig.shake,
+        colorMode: userSettings.colorMode || defaultConfig.colorMode,
+        colors: userSettings.colors || defaultConfig.colors
+      };
+      console.log(this._settings);
+    }
+
+    _onDecorated(term) {
       if (this.props.onDecorated) this.props.onDecorated(term);
       this._div = term ? term.termRef : null;
       this._initCanvas();
     }
 
     // Set up our canvas element we'll use to do particle effects on.
-    _initCanvas () {
+    _initCanvas() {
       this._canvas = document.createElement('canvas');
       this._canvas.style.position = 'absolute';
       this._canvas.style.top = '0';
@@ -84,13 +103,13 @@ exports.decorateTerm = (Term, { React }) => {
       window.addEventListener('resize', this._resizeCanvas);
     }
 
-    _resizeCanvas () {
+    _resizeCanvas() {
       this._canvas.width = window.innerWidth;
       this._canvas.height = window.innerHeight;
     }
 
     // Draw the next frame in the particle simulation.
-    _drawFrame () {
+    _drawFrame() {
       this._particles.length && this._canvasContext.clearRect(0, 0, this._canvas.width, this._canvas.height);
       this._particles.forEach((particle) => {
         particle.velocity.y += PARTICLE_GRAVITY;
@@ -110,21 +129,20 @@ exports.decorateTerm = (Term, { React }) => {
     }
 
     _getColors() {
-      if(config.colorMode === "cursor") {
+      if (this._settings.colorMode === "cursor") {
         return [toHex(this.props.cursorColor)];
-      } else if (config.colorMode === "rainbow") {
+      } else if (this._settings.colorMode === "rainbow") {
         return RAINBOW_COLORS;
+      } else {
+        return values(this._settings.colors).map(toHex);
       }
-
-      return values(config.colors).map(toHex);
     }
 
     // Pushes `PARTICLE_NUM_RANGE` new particles into the simulation.
-    _spawnParticles (x, y) {
+    _spawnParticles(x, y) {
       // const { colors } = this.props;
       const length = this._particles.length;
       const colors = this._getColors();
-      console.log(colors);
       const numParticles = PARTICLE_NUM_RANGE();
       for (let i = 0; i < numParticles; i++) {
         const colorCode = colors[i % colors.length];
@@ -141,7 +159,7 @@ exports.decorateTerm = (Term, { React }) => {
 
     // Returns a particle of a specified color
     // at some random offset from the input coordinates.
-    _createParticle (x, y, color) {
+    _createParticle(x, y, color) {
       return {
         x,
         y: y,
@@ -158,8 +176,8 @@ exports.decorateTerm = (Term, { React }) => {
 
     // 'Shakes' the screen by applying a temporary translation
     // to the terminal container.
-    _shake () {
-      if(!config.shake) {
+    _shake() {
+      if (!this._settings.shake) {
         return;
       }
 
@@ -172,17 +190,20 @@ exports.decorateTerm = (Term, { React }) => {
       }, 75);
     }
 
-    _onCursorMove (cursorFrame) {
+    _onCursorMove(cursorFrame) {
       if (this.props.onCursorMove) this.props.onCursorMove(cursorFrame);
       this._shake();
-      const { x, y } = cursorFrame;
+      const {
+        x,
+        y
+      } = cursorFrame;
       const origin = this._div.getBoundingClientRect();
       requestAnimationFrame(() => {
         this._spawnParticles(x + origin.left, y + origin.top);
       });
     }
 
-    render () {
+    render() {
       // Return the default Term component with our custom onTerminal closure
       // setting up and managing the particle effects.
       return React.createElement(Term, Object.assign({}, this.props, {
@@ -191,7 +212,7 @@ exports.decorateTerm = (Term, { React }) => {
       }));
     }
 
-    componentWillUnmount () {
+    componentWillUnmount() {
       document.body.removeChild(this._canvas);
     }
   }
