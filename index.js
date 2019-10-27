@@ -13,6 +13,7 @@ const PARTICLE_VELOCITY_RANGE = {
   x: [-1, 1],
   y: [-3.5, -1.5]
 };
+const PARTICLE_ALPHA_MIN_THRESHOLD = 0.1;
 
 // Our extension's custom redux middleware. Here we can intercept redux actions and respond to them.
 exports.middleware = (store) => (next) => (action) => {
@@ -143,12 +144,14 @@ exports.decorateTerm = (Term, { React, notify }) => {
         particle.x += particle.velocity.x;
         particle.y += particle.velocity.y;
         particle.alpha *= PARTICLE_ALPHA_FADEOUT;
-        this._canvasContext.fillStyle = `rgba(${particle.color.join(',')}, ${particle.alpha})`;
-        this._canvasContext.fillRect(Math.round(particle.x - 1), Math.round(particle.y - 1), 3, 3);
+        if (particle.alpha > PARTICLE_ALPHA_MIN_THRESHOLD) {
+          this._canvasContext.fillStyle = `rgba(${particle.color.join(',')}, ${particle.alpha})`;
+          this._canvasContext.fillRect(Math.round(particle.x - 1), Math.round(particle.y - 1), 3, 3);
+        }
       });
       this._particles = this._particles
         .slice(Math.max(this._particles.length - MAX_PARTICLES, 0))
-        .filter((particle) => particle.alpha > 0.1);
+        .filter((particle) => particle.alpha > PARTICLE_ALPHA_MIN_THRESHOLD);
       if (this._particles.length > 0 || this.props.needsRedraw) {
         window.requestAnimationFrame(this._drawFrame);
       }
