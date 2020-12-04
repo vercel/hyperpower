@@ -42,13 +42,14 @@ exports.middleware = (store) => (next) => (action) => {
 // at the command line. Currently it supports output from bash, zsh, fish, cmd and powershell.
 function detectWowCommand(data) {
   const patterns = [
+    'Command \'wow\' not found',
     'wow: command not found',
     'command not found: wow',
     'Unknown command \'wow\'',
     '\'wow\' is not recognized*',
     '\'wow\'은\\(는\\) 내부 또는 외부 명령.*'
   ];
-  return new RegExp('(' + patterns.join(')|(') + ')').test(data)
+  return new RegExp('(' + patterns.join(')|(') + ')', 'i').test(data)
 }
 
 // Our extension's custom ui state reducer. Here we can listen for our 'WOW_MODE_TOGGLE' action
