@@ -1,6 +1,7 @@
 {
   "name": "hyperpower",
   "version": "1.1.1",
+  "license": "MIT",
   "keywords": [
     "hyper",
     "hyper.app",
