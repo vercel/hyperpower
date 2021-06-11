@@ -9,6 +9,7 @@ const MAX_PARTICLES = 500;
 const PARTICLE_NUM_RANGE = () => 5 + Math.round(Math.random() * 5);
 const PARTICLE_GRAVITY = 0.075;
 const PARTICLE_ALPHA_FADEOUT = 0.96;
+const PARTICLE_ALPHA_CUTOFF = 0.1
 const PARTICLE_VELOCITY_RANGE = {
   x: [-1, 1],
   y: [-3.5, -1.5]
@@ -143,6 +144,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
         particle.x += particle.velocity.x;
         particle.y += particle.velocity.y;
         particle.alpha *= PARTICLE_ALPHA_FADEOUT;
+        if (particle.alpha < PARTICLE_ALPHA_CUTOFF) particle.alpha = 0;
         this._canvasContext.fillStyle = `rgba(${particle.color.join(',')}, ${particle.alpha})`;
         this._canvasContext.fillRect(Math.round(particle.x - 1), Math.round(particle.y - 1), 3, 3);
       });
