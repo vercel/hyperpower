@@ -145,8 +145,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
         particle.y += particle.velocity.y;
         particle.alpha *= PARTICLE_ALPHA_FADEOUT;
         if (particle.alpha > PARTICLE_ALPHA_MIN_THRESHOLD) {
-          this._canvasContext.fillStyle = `rgba(${particle.color.join(',')}, ${particle.alpha})`;
-          this._canvasContext.fillRect(Math.round(particle.x - 1), Math.round(particle.y - 1), 3, 3);
+          this._drawHeart(this._canvasContext, Math.round(particle.x - 1), Math.round(particle.y - 1), 12, 12, particle)
         }
       });
       this._particles = this._particles
@@ -156,6 +155,46 @@ exports.decorateTerm = (Term, { React, notify }) => {
         window.requestAnimationFrame(this._drawFrame);
       }
       this.props.needsRedraw = this._particles.length === 0;
+    }
+
+    _drawHeart(ctx, x, y, width, height, particle) {
+
+      ctx.beginPath();
+      var topCurveHeight = height * 0.3;
+      ctx.moveTo(x, y + topCurveHeight);
+      // top left curve
+      ctx.bezierCurveTo(
+        x, y, 
+        x - width / 2, y, 
+        x - width / 2, y + topCurveHeight
+      );
+    
+      // bottom left curve
+      ctx.bezierCurveTo(
+        x - width / 2, y + (height + topCurveHeight) / 2, 
+        x, y + (height + topCurveHeight) / 2, 
+        x, y + height
+      );
+    
+      // bottom right curve
+      ctx.bezierCurveTo(
+        x, y + (height + topCurveHeight) / 2, 
+        x + width / 2, y + (height + topCurveHeight) / 2, 
+        x + width / 2, y + topCurveHeight
+      );
+    
+      // top right curve
+      ctx.bezierCurveTo(
+        x + width / 2, y, 
+        x, y, 
+        x, y + topCurveHeight
+      );
+    
+      ctx.closePath();
+      ctx.fillStyle = `rgba(${particle.color.join(',')}, ${particle.alpha})`;
+      ctx.fill();
+      ctx.restore();
+    
     }
 
     // Pushes `PARTICLE_NUM_RANGE` new particles into the simulation.
@@ -184,7 +223,7 @@ exports.decorateTerm = (Term, { React, notify }) => {
     _createParticle (x, y, color) {
       return {
         x,
-        y: y,
+        y,
         alpha: 1,
         color,
         velocity: {
