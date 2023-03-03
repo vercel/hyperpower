@@ -46,6 +46,7 @@ function detectWowCommand(data) {
     'wow: command not found',
     'command not found: wow',
     'Unknown command \'wow\'',
+    'Unknown command: wow',
     '\'wow\' is not recognized*',
     '\'wow\'은\\(는\\) 내부 또는 외부 명령.*'
   ];
